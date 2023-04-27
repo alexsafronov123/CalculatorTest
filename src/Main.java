@@ -1,4 +1,6 @@
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
     enum Operator {
@@ -13,9 +15,6 @@ public class Main {
         int values[] = new int[2];
         int digitLastIndex = 0; int counter = 0; int firstValueIndex = 0;
 
-        if (!Character.isDigit(value.charAt(0))) {
-            throw new Exception("формат математической операции не удовлетворяет заданию - два операнда и один оператор, диапазон чисел от 1 до 10 включительно");
-        }
         while (counter < value.length()) {
             if (Character.isDigit(value.charAt(counter))) {
                 digitLastIndex++;
@@ -28,9 +27,7 @@ public class Main {
             }
         };
         counter++; digitLastIndex++; firstValueIndex  = counter;
-        if (!Character.isDigit(value.charAt(counter))) {
-            throw new Exception("формат математической операции не удовлетворяет заданию - два операнда и один оператор, диапазон чисел от 1 до 10 включительно");
-        }
+
         while (counter < value.length()) {
             if (Character.isDigit(value.charAt(counter)) && (counter < value.length()-1)) {
                 digitLastIndex++;
@@ -61,15 +58,16 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
-        String trimmedValue = input.replaceAll(" ", "");
-        Operator operator = getOperator(trimmedValue);
 
-        //Блок синтаксических контролей
-        if (
-                trimmedValue.length()<3 ||
-                        trimmedValue.length()>5 ||
-                        operator == Operator.UNDEFINED
-        ) throw new Exception("формат математической операции не удовлетворяет заданию - два операнда и один оператор, диапазон чисел от 1 до 10 включительно");
+        //Проверка на соответствие формуле <оператор><пробел><операнд><пробел><оператор>
+        String patternRow = "^(\\d+\\s+[\\+\\-\\*\\/]{1})+\\s+\\d+$";
+        Pattern inputPattern = Pattern.compile(patternRow);
+        Matcher check = inputPattern.matcher(input);
+        String trimmedValue  = input.replaceAll(" ", "");
+
+        if (!check.matches() //условия ввода
+                || trimmedValue.length()<3 || trimmedValue.length()>5 //условия размерности
+        ) throw new Exception("формат математической операции не удовлетворяет заданию - два операнда и один оператор, с учетом пробелов, диапазон чисел от 1 до 10 включительно");
 
         int values[] = getValues(trimmedValue);
 
@@ -78,6 +76,7 @@ public class Main {
                 values[0] > 10 || values[0] < 1 ||
                         values[1] > 10 || values[1] < 1
         ) throw new Exception("формат математической операции не удовлетворяет заданию - два операнда и один оператор, диапазон чисел от 1 до 10 включительно");
+        Operator operator = getOperator(trimmedValue);
 
         switch (operator){
             case PLUS : System.out.println(values[0]+values[1]); break;
